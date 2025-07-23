@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>I love you</title>
+<style>
+  body {
+    margin: 0;
+    background: black;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    font-family: 'Lucida Handwriting', cursive;
+    color: #e0b3ff;
+  }
+  #container {
+    position: relative;
+    width: 600px;
+    height: 600px;
+  }
+  canvas {
+    position: absolute;
+    top: 0; left: 0;
+    width: 600px;
+    height: 600px;
+  }
+  #text-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    z-index: 2;
+    user-select: none;
+  }
+  #text-container h1, #text-container h2 {
+    margin: 0;
+    opacity: 0;
+    animation: fadeIn 3s ease forwards;
+  }
+  #text-container h2 {
+    animation-delay: 5s;
+  }
+  @keyframes fadeIn {
+    to { opacity: 1; }
+  }
+</style>
+</head>
+<body>
+  <div id="container">
+    <canvas id="heartCanvas" width="600" height="600"></canvas>
+    <div id="text-container">
+      <h1>I love you</h1>
+      <h2>my princess</h2>
+    </div>
+  </div>
+
+  <audio id="bg-music" preload="auto" loop>
+    <source src="musica.mp3" type="audio/mpeg" />
+    Tu navegador no soporta audio HTML5.
+  </audio>
+
+<script>
+  const music = document.getElementById("bg-music");
+  music.volume = 0.15; // Volumen bajito (0 a 1)
+  music.play().catch(() => {
+    // Si el navegador bloquea el autoplay, intenta al primer clic
+    window.addEventListener('click', () => music.play());
+  });
+
+  const canvas = document.getElementById("heartCanvas");
+  const ctx = canvas.getContext("2d");
+
+  // Ajustamos tamaño del canvas para alta resolución (opcional)
+  const scale = window.devicePixelRatio || 1;
+  canvas.width = 600 * scale;
+  canvas.height = 600 * scale;
+  canvas.style.width = '600px';
+  canvas.style.height = '600px';
+  ctx.scale(scale, scale);
+
+  const particles = [];
+  const total = 3000;
+
+  function heartFunction(t) {
+    const x = 16 * Math.pow(Math.sin(t), 3);
+    const y = 13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t);
+    return { x, y };
+  }
+
+  class Particle {
+    constructor(x, y) {
+      this.x = 300; // center x in canvas px
+      this.y = 300; // center y in canvas px
+      this.tx = x;
+      this.ty = y;
+      this.size = Math.random() * 2 + 0.5;
+      this.color = "#cc66ff";
+      this.alpha = 0;
+      this.speed = Math.random() * 0.02 + 0.015;
+    }
+
+    update() {
+      this.x += (this.tx - this.x) * this.speed;
+      this.y += (this.ty - this.y) * this.speed;
+      this.alpha += 0.01;
+      if (this.alpha > 1) this.alpha = 1;
+    }
+
+    draw() {
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+      ctx.fillStyle = this.color;
+      ctx.globalAlpha = this.alpha;
+      ctx.shadowBlur = 6;
+      ctx.shadowColor = "#d580ff";
+      ctx.fill();
+      ctx.globalAlpha = 1;
+    }
+  }
+
+  function animate() {
+    ctx.clearRect(0, 0, 600, 600);
+    if (particles.length < total) {
+      const angle = Math.random() * Math.PI * 2;
+      const { x, y } = heartFunction(angle);
+      const scale = 15;
+      const px = 300 + x * scale;
+      const py = 300 - y * scale;
+      particles.push(new Particle(px, py));
+    }
+
+    particles.forEach(p => {
+      p.update();
+      p.draw();
+    });
+
+    requestAnimationFrame(animate);
+  }
+
+  animate();
+</script>
+</body>
+</html>
